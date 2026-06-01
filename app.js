@@ -9,8 +9,15 @@ document.addEventListener('DOMContentLoaded', () => {
     const statusFilter = document.getElementById('status-filter');
     const exportBtn = document.getElementById('export-btn');
 
+    let statusChartInstance = null;
+    let purposeChartInstance = null;
+
     // State
     let members = JSON.parse(localStorage.getItem('bankMembers')) || [];
+
+    // Chart Defaults
+    Chart.defaults.color = '#94a3b8';
+    Chart.defaults.font.family = "'Outfit', sans-serif";
 
     // Initial render
     renderMembers();
@@ -133,10 +140,74 @@ document.addEventListener('DOMContentLoaded', () => {
         }).format(amount);
     }
 
-    function updateStats(filteredMembers) {
+    function updateStats() {
         totalMembersEl.textContent = members.length; // Show total members in system
         const totalLoan = members.reduce((sum, member) => sum + member.loanAmount, 0); // Show total loan of all members
         totalLoansEl.textContent = formatCurrency(totalLoan);
+        updateCharts();
+    }
+
+    function updateCharts() {
+        const statusCounts = { Pending: 0, Approved: 0, Rejected: 0 };
+        const purposeTotals = { Personal: 0, Auto: 0, Mortgage: 0, Business: 0, Other: 0 };
+
+        members.forEach(m => {
+            if (statusCounts[m.status] !== undefined) {
+                statusCounts[m.status]++;
+            }
+            if (purposeTotals[m.purpose] !== undefined) {
+                purposeTotals[m.purpose] += m.loanAmount;
+            } else {
+                purposeTotals['Other'] += m.loanAmount;
+            }
+        });
+
+        const statusCtx = document.getElementById('status-chart').getContext('2d');
+        const purposeCtx = document.getElementById('purpose-chart').getContext('2d');
+
+        if (statusChartInstance) statusChartInstance.destroy();
+        statusChartInstance = new Chart(statusCtx, {
+            type: 'doughnut',
+            data: {
+                labels: ['Pending', 'Approved', 'Rejected'],
+                datasets: [{
+                    data: [statusCounts.Pending, statusCounts.Approved, statusCounts.Rejected],
+                    backgroundColor: ['rgba(245, 158, 11, 0.8)', 'rgba(16, 185, 129, 0.8)', 'rgba(239, 68, 68, 0.8)'],
+                    borderWidth: 0
+                }]
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                plugins: {
+                    legend: { position: 'bottom' }
+                }
+            }
+        });
+
+        if (purposeChartInstance) purposeChartInstance.destroy();
+        purposeChartInstance = new Chart(purposeCtx, {
+            type: 'bar',
+            data: {
+                labels: Object.keys(purposeTotals),
+                datasets: [{
+                    label: 'Total Amount ($)',
+                    data: Object.values(purposeTotals),
+                    backgroundColor: 'rgba(59, 130, 246, 0.8)',
+                    borderRadius: 4
+                }]
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                scales: {
+                    y: { beginAtZero: true, ticks: { callback: (val) => '$' + val } }
+                },
+                plugins: {
+                    legend: { display: false }
+                }
+            }
+        });
     }
 
     function renderMembers() {
