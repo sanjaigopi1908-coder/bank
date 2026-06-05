@@ -108,11 +108,42 @@ document.addEventListener('DOMContentLoaded', () => {
     window.updateStatus = (id, newStatus) => {
         const member = members.find(m => m.id === id);
         if (member) {
+            const oldStatus = member.status;
             member.status = newStatus;
             saveData();
             renderMembers();
+
+            if (newStatus === 'Approved' && oldStatus !== 'Approved') {
+                sendSMS(member);
+            }
         }
     };
+
+    function sendSMS(member) {
+        const toastContainer = document.getElementById('toast-container');
+        if (!toastContainer) return;
+
+        const toast = document.createElement('div');
+        toast.className = 'toast';
+        
+        const msg = `Hello ${member.name}, your loan of ${formatCurrency(member.loanAmount)} has been accepted by the bank. You will be paying ${formatCurrency(member.monthlyPayment)} every month.`;
+        
+        toast.innerHTML = `
+            <div class="toast-header">SMS sent to ${member.contact}</div>
+            <div>${msg}</div>
+            <div style="margin-top: 0.2rem; font-size: 0.8rem; color: var(--text-muted);">- TIDC Cooperative Society</div>
+        `;
+
+        toastContainer.appendChild(toast);
+
+        // Remove toast after 8 seconds
+        setTimeout(() => {
+            toast.classList.add('removing');
+            toast.addEventListener('animationend', () => {
+                toast.remove();
+            });
+        }, 8000);
+    }
 
     // Search and filter
     searchInput.addEventListener('input', renderMembers);
