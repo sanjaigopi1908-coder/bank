@@ -1,4 +1,33 @@
 document.addEventListener('DOMContentLoaded', () => {
+    const loginOverlay = document.getElementById('login-overlay');
+    const appContainer = document.getElementById('app-container');
+    const loginForm = document.getElementById('login-form');
+    const loginError = document.getElementById('login-error');
+
+    // Authentication Logic
+    const isAuthenticated = sessionStorage.getItem('isAuthenticated');
+    if (isAuthenticated) {
+        loginOverlay.style.display = 'none';
+        appContainer.style.display = 'block';
+    } else {
+        loginOverlay.style.display = 'flex';
+        appContainer.style.display = 'none';
+    }
+
+    loginForm.addEventListener('submit', (e) => {
+        e.preventDefault();
+        const user = document.getElementById('username').value;
+        const pass = document.getElementById('password').value;
+
+        if (user === 'Gopi' && pass === 'Gs175175') {
+            sessionStorage.setItem('isAuthenticated', 'true');
+            loginOverlay.style.display = 'none';
+            appContainer.style.display = 'block';
+        } else {
+            loginError.style.display = 'block';
+        }
+    });
+
     const memberForm = document.getElementById('member-form');
     const memberList = document.getElementById('member-list');
     const emptyState = document.getElementById('empty-state');

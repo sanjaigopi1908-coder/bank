@@ -36,6 +36,25 @@ body {
     padding: 0 1rem 3rem 1rem;
 }
 
+/* Login Overlay */
+.login-overlay {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100vw;
+    height: 100vh;
+    background-color: rgba(15, 23, 42, 0.95);
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    z-index: 1000;
+}
+
+.login-card {
+    width: 100%;
+    max-width: 400px;
+}
+
 /* Navbar */
 .navbar {
     padding: 1.5rem 0;
