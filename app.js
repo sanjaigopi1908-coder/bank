@@ -119,30 +119,63 @@ document.addEventListener('DOMContentLoaded', () => {
         }
     };
 
-    function sendSMS(member) {
+    async function sendSMS(member) {
         const toastContainer = document.getElementById('toast-container');
         if (!toastContainer) return;
 
-        const toast = document.createElement('div');
-        toast.className = 'toast';
+        const msg = `Hello ${member.name}, your loan of ${formatCurrency(member.loanAmount)} has been accepted. You will be paying ${formatCurrency(member.monthlyPayment)} every month. - TIDC Cooperative Society`;
         
-        const msg = `Hello ${member.name}, your loan of ${formatCurrency(member.loanAmount)} has been accepted by the bank. You will be paying ${formatCurrency(member.monthlyPayment)} every month.`;
-        
-        toast.innerHTML = `
-            <div class="toast-header">SMS sent to ${member.contact}</div>
-            <div>${msg}</div>
-            <div style="margin-top: 0.2rem; font-size: 0.8rem; color: var(--text-muted);">- TIDC Cooperative Society</div>
-        `;
-
-        toastContainer.appendChild(toast);
-
-        // Remove toast after 8 seconds
-        setTimeout(() => {
-            toast.classList.add('removing');
-            toast.addEventListener('animationend', () => {
-                toast.remove();
+        try {
+            const response = await fetch('http://localhost:3000/api/send-sms', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify({
+                    to: member.contact,
+                    message: msg
+                })
             });
-        }, 8000);
+
+            const result = await response.json();
+
+            const toast = document.createElement('div');
+            toast.className = 'toast';
+            
+            if (response.ok) {
+                toast.innerHTML = `
+                    <div class="toast-header" style="color: var(--primary-color);">REAL SMS SENT</div>
+                    <div>Successfully delivered to ${member.contact} via Twilio!</div>
+                `;
+            } else {
+                toast.style.borderLeftColor = 'var(--danger-color)';
+                toast.innerHTML = `
+                    <div class="toast-header" style="color: var(--danger-color);">SMS FAILED</div>
+                    <div>Error: ${result.error || 'Failed to send'}</div>
+                `;
+            }
+
+            toastContainer.appendChild(toast);
+            setTimeout(() => {
+                toast.classList.add('removing');
+                toast.addEventListener('animationend', () => toast.remove());
+            }, 8000);
+
+        } catch (error) {
+            console.error('Failed to connect to backend:', error);
+            const toast = document.createElement('div');
+            toast.className = 'toast';
+            toast.style.borderLeftColor = 'var(--danger-color)';
+            toast.innerHTML = `
+                <div class="toast-header" style="color: var(--danger-color);">BACKEND ERROR</div>
+                <div>Could not connect to the SMS server. Is Node.js running?</div>
+            `;
+            toastContainer.appendChild(toast);
+            setTimeout(() => {
+                toast.classList.add('removing');
+                toast.addEventListener('animationend', () => toast.remove());
+            }, 8000);
+        }
     }
 
     // Search and filter
