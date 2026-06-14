@@ -126,7 +126,7 @@ document.addEventListener('DOMContentLoaded', () => {
         const msg = `Hello ${member.name}, your loan of ${formatCurrency(member.loanAmount)} has been accepted. You will be paying ${formatCurrency(member.monthlyPayment)} every month. - TIDC Cooperative Society`;
         
         try {
-            const response = await fetch('http://localhost:3000/api/send-sms', {
+            const response = await fetch('/api/send-sms', {
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json'
