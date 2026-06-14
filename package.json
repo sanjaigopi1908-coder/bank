@@ -2,9 +2,8 @@
   "name": "bank-member-loan-portal",
   "version": "1.0.0",
   "description": "TIDC Cooperative Society Portal with Twilio SMS integration",
-  "main": "server.js",
   "scripts": {
-    "local": "node server.js"
+    "local": "node local-server.js"
   },
   "dependencies": {
     "cors": "^2.8.5",
